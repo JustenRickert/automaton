@@ -1,3 +1,33 @@
+ul {
+    margin-left: 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+.main {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.main > * {
+    margin: 10px;
+    padding: 5px;
+    border-style: solid;
+}
+
 .city_title {
     cursor: pointer;
+}
+
+.city_title:hover {
+    background-color: lightgray;
+}
+
+.sidebar {
+    flex: 1;
+}
+
+.city-menu {
+    flex: 4;
 }

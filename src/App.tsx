@@ -1,80 +1,67 @@
 import React, {Component, useState, PureComponent} from 'react'
+import {compose} from 'redux'
 import {connect, Provider} from 'react-redux'
+import {Omit} from 'lodash'
 
 import {store, Root} from './store'
 
-import {City, setCities} from './model/city'
+import {City, setCities, educateCity, focusCity} from './model/city'
+import {CitiesUl, FocusedCitySection, FocusedCityProps} from './components/city'
 
 import './App.css'
 
-const LiCity = (props: {
-  city: City
-  isFocused: boolean
-  onChangeFocus: (city: City) => void
-}) => {
-  const {city, isFocused, onChangeFocus} = props
-  return (
-    <li>
-      <h3 className="city_title" onClick={() => onChangeFocus(city)}>
-        {city.place.name} <span>({city.population})</span>
-      </h3>
-      {isFocused && <p>{city.description}</p>}
-    </li>
-  )
-}
+const selectCity = (root: Root) =>
+  root.city.focusedCityIndex === -1
+    ? null
+    : root.city.cities[root.city.focusedCityIndex]
 
-type CitiesProps = {
-  cities: City[]
-  focusedCity: City | null
-  onChangeFocus: (city: City) => void
-}
+const Cities = connect(
+  (root: Root) => ({
+    cities: root.city.cities,
+    focusedCity: selectCity(root)
+  }),
+  dispatch => ({
+    onChangeFocus: (city: City) => dispatch(focusCity(city))
+  })
+)(CitiesUl)
 
-const StatelessCitiesList = (props: CitiesProps) => {
-  const {cities, focusedCity, onChangeFocus} = props
-  return (
-    <ul>
-      {cities.map(city => (
-        <LiCity
-          isFocused={Boolean(focusedCity && city.id === focusedCity.id)}
-          onChangeFocus={onChangeFocus}
-          city={city}
-        />
-      ))}
-    </ul>
-  )
-}
-
-const CitiesList = connect((state: Root) => ({
-  cities: state.city.cities
-}))(StatelessCitiesList)
-
-type State = {
+type Props = {
   focusedCity: City | null
 }
 
-export default class App extends PureComponent<{}, State> {
-  readonly state: State = {focusedCity: null}
+type ConnectedFocusedCityProps = Omit<FocusedCityProps, 'focusedCity'> & {
+  focusedCity: City | null
+}
 
+const FocusedCity = connect(
+  (root: Root) => ({
+    focusedCity: selectCity(root)
+  }),
+  dispatch => ({
+    educate: (city: City) => dispatch(educateCity(city))
+  })
+)(
+  ({focusedCity, ...rest}: ConnectedFocusedCityProps) =>
+    focusedCity ? (
+      <FocusedCitySection focusedCity={focusedCity} {...rest} />
+    ) : null
+)
+
+export default class App extends Component {
   componentDidMount() {
     store.dispatch(setCities())
   }
 
-  toggleCityFocus = (city: City) =>
-    this.setState(state => ({
-      focusedCity: city === state.focusedCity ? null : city
-    }))
-
   render() {
-    const {focusedCity} = this.state
     return (
-      <div className="App">
-        <Provider store={store}>
-          <CitiesList
-            focusedCity={focusedCity}
-            onChangeFocus={this.toggleCityFocus}
-          />
-        </Provider>
-      </div>
+      <Provider store={store}>
+        <div className="main">
+          <div className="sidebar">
+            <Cities />
+          </div>
+          <div className="city-menu">{<FocusedCity />}</div>
+        </div>
+      </Provider>
     )
   }
 }
