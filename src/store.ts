@@ -1,8 +1,9 @@
 import {createStore, combineReducers} from 'redux'
 
-import {reducer} from './model/city'
+import {reducer as cityReducer} from './model/city'
+import {reducer as miscReducer} from './model/misc'
 
-const root = combineReducers({city: reducer})
+const root = combineReducers({city: cityReducer, misc: miscReducer})
 
 export const store = createStore(root)
 

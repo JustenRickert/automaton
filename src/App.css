@@ -4,8 +4,29 @@ ul {
     list-style: none;
 }
 
+.city_title {
+    cursor: pointer;
+}
+
+.city_title:hover {
+    background-color: lightgray;
+}
+
+.content {
+    display: flex;
+}
+
+.sidebar {
+    flex: 1;
+}
+
+.city-menu {
+    flex: 4;
+}
+
 .main {
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
     width: 100%;
 }
@@ -16,18 +37,19 @@ ul {
     border-style: solid;
 }
 
-.city_title {
-    cursor: pointer;
+.tabs {
+    display: flex;
 }
 
-.city_title:hover {
+.tabs > h3 {
+    padding: 20px;
+}
+
+.tabs > h3:hover {
     background-color: lightgray;
+    background-color: lightseagreen;
 }
 
-.sidebar {
-    flex: 1;
-}
-
-.city-menu {
-    flex: 4;
+.highlighted {
+    background-color: lightgray;
 }
