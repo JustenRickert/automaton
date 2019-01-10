@@ -1,28 +1,80 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {Component, useState, PureComponent} from 'react'
+import {connect, Provider} from 'react-redux'
 
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.tsx</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
-  }
+import {store, Root} from './store'
+
+import {City, setCities} from './model/city'
+
+import './App.css'
+
+const LiCity = (props: {
+  city: City
+  isFocused: boolean
+  onChangeFocus: (city: City) => void
+}) => {
+  const {city, isFocused, onChangeFocus} = props
+  return (
+    <li>
+      <h3 className="city_title" onClick={() => onChangeFocus(city)}>
+        {city.place.name} <span>({city.population})</span>
+      </h3>
+      {isFocused && <p>{city.description}</p>}
+    </li>
+  )
 }
 
-export default App;
+type CitiesProps = {
+  cities: City[]
+  focusedCity: City | null
+  onChangeFocus: (city: City) => void
+}
+
+const StatelessCitiesList = (props: CitiesProps) => {
+  const {cities, focusedCity, onChangeFocus} = props
+  return (
+    <ul>
+      {cities.map(city => (
+        <LiCity
+          isFocused={Boolean(focusedCity && city.id === focusedCity.id)}
+          onChangeFocus={onChangeFocus}
+          city={city}
+        />
+      ))}
+    </ul>
+  )
+}
+
+const CitiesList = connect((state: Root) => ({
+  cities: state.city.cities
+}))(StatelessCitiesList)
+
+type State = {
+  focusedCity: City | null
+}
+
+export default class App extends PureComponent<{}, State> {
+  readonly state: State = {focusedCity: null}
+
+  componentDidMount() {
+    store.dispatch(setCities())
+  }
+
+  toggleCityFocus = (city: City) =>
+    this.setState(state => ({
+      focusedCity: city === state.focusedCity ? null : city
+    }))
+
+  render() {
+    const {focusedCity} = this.state
+    return (
+      <div className="App">
+        <Provider store={store}>
+          <CitiesList
+            focusedCity={focusedCity}
+            onChangeFocus={this.toggleCityFocus}
+          />
+        </Provider>
+      </div>
+    )
+  }
+}
