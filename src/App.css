@@ -8,55 +8,6 @@ ul {
     list-style: none;
 }
 
-.city_title {
-    cursor: pointer;
-}
-
-.city_title:hover {
-    background-color: lightgray;
-}
-
-.content {
-    display: flex;
-    height: 100%;
-}
-
-.sidebar {
-    flex: 1;
-}
-
-.city-menu {
-    flex: 4;
-}
-
-.main {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 100%;
-    height: 100%;
-}
-
-.main > * {
-    margin: 10px;
-    padding: 5px;
-    border-style: solid;
-}
-
-.tabs {
-    display: flex;
-}
-
-.tabs > h3 {
-    cursor: pointer;
-    padding: 20px;
-}
-
-.tabs > h3:hover {
-    background-color: lightgray;
-    background-color: lightseagreen;
-}
-
-.highlighted {
-    background-color: lightgray;
+section {
+    margin-left: 1em;
 }

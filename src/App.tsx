@@ -1,112 +1,40 @@
 import React, {Component, useState, PureComponent} from 'react'
-import {compose, bindActionCreators} from 'redux'
 import {connect, Provider} from 'react-redux'
-import {Omit} from 'lodash'
 
 import {store, Root} from './store'
 
-import {Route, changeRoute} from './model/misc'
-import {City, setCities, learnCity, focusCity} from './model/city'
-import {CitiesUl, FocusedCitySection, FocusedCityProps} from './components/city'
-import {StoreSection} from './components/store'
-import {TabsSection} from './components/tabs'
-import {Cities} from './containers/city'
-
-import {selectCity} from './selectors'
+import {createRandomEligibleRobot} from './model/robots'
+import {RobotsInfo} from './components/robots'
+import {initAutomaton, tickKnowledge} from './model/automaton'
+import {AutomatonInfo} from './components/automaton'
+import {setRandomInterval} from './util'
 
 import './App.css'
 
-const ROUTES: Route[] = ['cities', 'store']
+const Automaton = connect((root: Root) => ({
+  ...root.automaton
+}))(AutomatonInfo)
 
-type Props = {
-  focusedCity: City | null
-}
-
-type ConnectedFocusedCityProps = Omit<FocusedCityProps, 'focusedCity'> & {
-  focusedCity: City | null
-}
-
-const FocusedCity = connect(
-  (root: Root) => ({
-    focusedCity: selectCity(root)
-  }),
-  dispatch =>
-    bindActionCreators(
-      {
-        learn: learnCity
-      },
-      dispatch
-    )
-)(
-  ({focusedCity, ...rest}: ConnectedFocusedCityProps) =>
-    focusedCity ? (
-      <FocusedCitySection focusedCity={focusedCity} {...rest} />
-    ) : null
-)
-
-const Store = connect(
-  (root: Root) => ({
-    cities: root.city.cities,
-    focusedCity: selectCity(root)
-  }),
-  dispatch => bindActionCreators({}, dispatch)
-)(StoreSection)
-
-const ConnectRoute = connect((state: Root) => ({
-  route: state.misc.route
-}))((props: {route: Route}) => {
-  switch (props.route) {
-    case 'store': {
-      return (
-        <div className="content">
-          <Store />
-        </div>
-      )
-    }
-    case 'cities': {
-      return (
-        <div className="content">
-          <div className="sidebar">
-            <Cities />
-          </div>
-          <div className="city-menu">
-            <FocusedCity />
-          </div>
-        </div>
-      )
-    }
-  }
-  return null
-})
-
-const Tabs = connect(
-  (root: Root) => ({
-    routes: ROUTES,
-    currentRoute: root.misc.route
-  }),
-  dispatch =>
-    bindActionCreators(
-      {
-        onChangeRoute: changeRoute
-      },
-      dispatch
-    )
-)(TabsSection)
+const Robots = connect((root: Root) => ({...root.robots}))(RobotsInfo)
 
 export default class App extends PureComponent {
   componentDidMount() {
-    store.dispatch(setCities())
+    store.dispatch(initAutomaton())
+    setInterval(() => store.dispatch(tickKnowledge()), 5000)
+    setRandomInterval(
+      () => {
+        const state = store.getState()
+        store.dispatch(createRandomEligibleRobot(state.automaton))
+      },
+      [1000, 10000]
+    )
   }
 
   render() {
     return (
       <Provider store={store}>
-        <div className="main">
-          <div className="topbar">
-            <Tabs />
-          </div>
-          <ConnectRoute />
-        </div>
+        <Automaton />
+        <Robots />
       </Provider>
     )
   }

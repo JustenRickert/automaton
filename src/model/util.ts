@@ -1,18 +1,8 @@
-export const updateAtKey = <State, Key extends keyof State>(
-  state: State,
-  key: Key,
-  f: (property: State[Key]) => State[Key]
-) => ({
-  ...state,
-  [key]: f(state[key])
-})
-
-export const updateThe = <T, R>(
-  arr: T[],
-  index: number | T,
-  f: (x: T) => R
-) => {
-  if (typeof index === 'number')
-    return arr.map((t, i) => (i === index ? f(t) : t))
-  return arr.map(t => (t === index ? f(t) : t))
+export function hasSharedStructured(o1: any, o2: any): boolean {
+  return Object.keys(o1).every(key => {
+    if (typeof o1[key] === typeof o2[key] && typeof o1[key] === 'object') {
+      return hasSharedStructured(o1[key], o2[key])
+    }
+    return key in o2 && typeof o1[key] === typeof o2[key]
+  })
 }
