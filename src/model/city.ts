@@ -14,7 +14,11 @@ export type City = {
   place: Place
   population: number
   description: string
-  education: number
+  items: {
+    knowledge: number
+    education: number
+    indoctrination: number
+  }
 }
 
 type State = typeof defaultState
@@ -40,7 +44,11 @@ export const setCities = (): SetCitiesAction => ({
       },
       population: 10,
       description: 'A city of unhappy peasants',
-      education: 0
+      items: {
+        knowledge: 0,
+        education: 0,
+        indoctrination: 0
+      }
     },
     {
       place: {
@@ -49,7 +57,11 @@ export const setCities = (): SetCitiesAction => ({
       },
       population: 10,
       description: 'A city of creepy thinkers',
-      education: 0
+      items: {
+        knowledge: 0,
+        education: 0,
+        indoctrination: 0
+      }
     }
   ]
 })
@@ -84,17 +96,21 @@ export const addCity = (
 ): AddCityAction => ({
   type: CITY_ADD_CITY,
   place: place,
-  city: {population, description, education: 0}
+  city: {
+    population,
+    description,
+    items: {knowledge: 0, education: 0, indoctrination: 0}
+  }
 })
 
 const CITY_EDUCATE = 'CITY/Educate'
 
-type EducateCityAction = {
+type ProduceKnowledgeAction = {
   type: typeof CITY_EDUCATE
   city: City
 }
 
-export const educateCity = (city: City): EducateCityAction => ({
+export const learnCity = (city: City): ProduceKnowledgeAction => ({
   city,
   type: CITY_EDUCATE
 })
@@ -110,7 +126,7 @@ const places = (state: State) => state.cities.map(city => city.place)
 
 export const reducer: Reducer<
   State,
-  AddCityAction | SetCitiesAction | EducateCityAction | FocusCityAction
+  AddCityAction | SetCitiesAction | ProduceKnowledgeAction | FocusCityAction
 > = (state = defaultState, action) => {
   switch (action.type) {
     case CITY_ADD_CITY: {
@@ -151,7 +167,10 @@ export const reducer: Reducer<
         ...state,
         cities: updateThe(state.cities, action.city, city => ({
           ...city,
-          education: city.education + 1
+          items: {
+            ...city.items,
+            knowledge: city.items.knowledge + 1
+          }
         }))
       }
     }

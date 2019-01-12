@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {City, educateCity} from '../model/city'
+import {City, learnCity} from '../model/city'
 
 const LiCity = (props: {
   city: City
@@ -38,26 +38,22 @@ export const CitiesUl = (props: CitiesProps) => {
   )
 }
 
-export type FocusedCityProps = {focusedCity: City; educate: typeof educateCity}
+export type FocusedCityProps = {focusedCity: City; learn: typeof learnCity}
 
 export const FocusedCitySection = (props: FocusedCityProps) => {
   const {
     focusedCity,
-    focusedCity: {description, population, place, education}
+    focusedCity: {description, population, place, items: {knowledge}},
+    learn
   } = props
   return (
     <section>
       <h3 children={place.name} />
       <p children={`${description} in ${place.description.toLowerCase()}.`} />
-      <br />
 
-      <p children={`They are as smart as ${education} ideas can be.`} />
-      <br />
+      <p children={`They are as smart as ${knowledge} ideas can be.`} />
 
-      <button
-        onClick={() => props.educate(focusedCity)}
-        children="Educate City"
-      />
+      <button onClick={() => learn(focusedCity)} children="Educate City" />
     </section>
   )
 }
