@@ -1,10 +1,16 @@
-import {createStore, combineReducers, AnyAction} from 'redux'
+import {createStore, combineReducers, applyMiddleware, AnyAction} from 'redux'
 
-import {reducer as automaton} from './model/automaton'
-import {reducer as robots} from './model/robots'
+import {reducer as automaton, AutomatonState} from './model/automaton'
+import {reducer as expedition, ExpeditionState} from './model/expedition'
+import {reducer as robots, RobotsState} from './model/robots'
+import {expeditionMiddleware} from './middleware'
 
-const root = combineReducers({automaton, robots})
+export interface Root {
+  automaton: AutomatonState
+  expedition: ExpeditionState
+  robots: RobotsState
+}
 
-export const store = createStore(root)
+const root = combineReducers<Root>({automaton, robots, expedition})
 
-export type Root = ReturnType<typeof store.getState>
+export const store = createStore(root, applyMiddleware(expeditionMiddleware))

@@ -63,13 +63,15 @@ const possibleRobots = [
   {automatonKnowledgeRequirement: 15, factory: stubUtilityRobot}
 ]
 
-type SendSearchExpedition = {
+export type SendSearchExpedition = {
   type: 'ROBOTS/SendSearchExpedition'
+  expeditionRobots: RobotUnion[]
   [BASIC_ROBOT]?: number
   [UTILITY_ROBOT]?: number
 }
 
-const sendSearchExpedition = (numbers: {
+export const sendSearchExpedition = (numbers: {
+  expeditionRobots: RobotUnion[]
   [BASIC_ROBOT]?: number
   [UTILITY_ROBOT]?: number
 }): SendSearchExpedition => ({

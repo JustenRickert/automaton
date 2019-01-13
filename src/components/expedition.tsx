@@ -1,6 +1,12 @@
 import * as React from 'react'
 
-import {RobotsState} from '../model/robots'
+import {
+  RobotsState,
+  sendSearchExpedition,
+  BASIC_ROBOT,
+  UTILITY_ROBOT
+} from '../model/robots'
+import {ExpeditionState} from '../model/expedition'
 
 type State = {
   basics: string
@@ -13,7 +19,14 @@ const clamp = (value: string, max: string) => {
   return value
 }
 
-export class ExpeditionMenu extends React.Component<RobotsState, State> {
+interface ExpeditionAction {
+  sendSearchExpedition: typeof sendSearchExpedition
+}
+
+export class ExpeditionMenu extends React.Component<
+  RobotsState & ExpeditionAction,
+  State
+> {
   readonly state: State = {
     basics: '',
     utilities: ''
@@ -38,7 +51,7 @@ export class ExpeditionMenu extends React.Component<RobotsState, State> {
   }
 
   render() {
-    const {basics, utilities} = this.props
+    const {basics, utilities, sendSearchExpedition} = this.props
     return (
       <ul>
         {Boolean(basics.length) && (
@@ -56,7 +69,33 @@ export class ExpeditionMenu extends React.Component<RobotsState, State> {
             </p>
           </li>
         )}
+        <button
+          onClick={() => {
+            sendSearchExpedition({
+              [BASIC_ROBOT]: Number(this.state.basics),
+              [UTILITY_ROBOT]: Number(this.state.utilities),
+              expeditionRobots: [...basics, ...utilities]
+            })
+            this.setState({basics: '', utilities: ''})
+          }}
+          children="Send search expedition"
+        />
       </ul>
     )
   }
+}
+
+export const OngoingExpeditionMenu = (props: ExpeditionState) => {
+  const {expeditions} = props
+  console.log('EXPEDITIONS', expeditions)
+  return (
+    <section>
+      {expeditions.map(expedition => (
+        <div>
+          {expedition.robots.length} robots out on a {expedition.time}s search
+          expedition
+        </div>
+      ))}
+    </section>
+  )
 }

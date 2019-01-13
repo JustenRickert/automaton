@@ -1,11 +1,12 @@
 import React, {Component, useState, PureComponent} from 'react'
+import {bindActionCreators} from 'redux'
 import {connect, Provider} from 'react-redux'
 import {capitalize} from 'lodash'
 
 import {store, Root} from './store'
 
-import {ExpeditionMenu} from './components/expedition'
-import {createRandomEligibleRobot} from './model/robots'
+import {ExpeditionMenu, OngoingExpeditionMenu} from './components/expedition'
+import {createRandomEligibleRobot, sendSearchExpedition} from './model/robots'
 import {RobotsInfo} from './components/robots'
 import {initAutomaton, tickKnowledge} from './model/automaton'
 import {AutomatonInfo} from './components/automaton'
@@ -19,13 +20,20 @@ const Automaton = connect((root: Root) => ({
 
 const Robots = connect((root: Root) => ({...root.robots}))(RobotsInfo)
 
-const Expedition = connect((root: Root) => ({
-  ...root.robots
-}))(ExpeditionMenu)
+const Expedition = connect(
+  (root: Root) => ({
+    ...root.robots
+  }),
+  dispatch => bindActionCreators({sendSearchExpedition}, dispatch)
+)(ExpeditionMenu)
 
-type Route = 'automaton' | 'expedition'
+const OngoingExpeditions = connect((root: Root) => ({
+  ...root.expedition
+}))(OngoingExpeditionMenu)
 
-const routes: Route[] = ['automaton', 'expedition']
+type Route = 'automaton' | 'expedition' | 'ongoings'
+
+const routes: Route[] = ['automaton', 'expedition', 'ongoings']
 
 interface State {
   route: Route
@@ -44,6 +52,12 @@ export const Router = (props: {route: Route}) => {
       return (
         <>
           <Expedition />
+        </>
+      )
+    case 'ongoings':
+      return (
+        <>
+          <OngoingExpeditions />
         </>
       )
   }
