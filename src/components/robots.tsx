@@ -1,8 +1,9 @@
 import * as React from 'react'
 
-import {RobotsState, Robot} from '../model/robots'
+import {RobotsState, RobotUnion} from '../model/robots'
+import {partitionRobots} from '../model/util'
 
-const RobotInfo = (props: {robot: Robot}) => {
+const RobotInfo = (props: {robot: RobotUnion}) => {
   const {description, type, birthTime} = props.robot
   const now = Date.now()
   return (
@@ -18,18 +19,34 @@ const RobotInfo = (props: {robot: Robot}) => {
   )
 }
 
+const averageRobotAge = (robots: RobotUnion[]) => {
+  const now = Date.now()
+  return (
+    (
+      robots.reduce((sum, basic) => sum + (now - basic.birthTime) / 1000, 0) /
+      robots.length
+    ).toLocaleString() + 's'
+  )
+}
+
 export const RobotsInfo = (props: RobotsState) => {
-  const {robots} = props
-  console.log(robots)
+  const {basics, utilities} = props
   return (
     <div>
       <h3 children="Robots" />
       <section>
-        {robots.length ? (
-          robots.map(robot => <RobotInfo key={robot.id} robot={robot} />)
-        ) : (
-          <p children="No robots :(" />
-        )}
+        <ul>
+          {Boolean(basics.length) && (
+            <li>
+              Basics: {basics.length} @ {averageRobotAge(basics)} of age
+            </li>
+          )}
+          {Boolean(utilities.length) && (
+            <li>
+              Utilites: {utilities.length} @ {averageRobotAge(utilities)} of age
+            </li>
+          )}
+        </ul>
       </section>
     </div>
   )

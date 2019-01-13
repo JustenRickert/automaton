@@ -4,37 +4,45 @@ import uuid from 'uuid'
 
 import {AutomatonState} from './automaton'
 
+export const BASIC_ROBOT = 'robot/basic'
+export const UTILITY_ROBOT = 'robot/utility'
+
+type RobotTypes = typeof BASIC_ROBOT | typeof UTILITY_ROBOT
+
 export interface Robot {
   id: string
-  type: string
+  type: RobotTypes
   description: string
   birthTime: number
+  abilityToSearch: number
 }
 
-interface BasicRobot extends Robot {
-  type: 'robot/basic'
+export interface BasicRobot extends Robot {
+  type: typeof BASIC_ROBOT
 }
 
 const stubBasicRobot = (): BasicRobot => ({
-  type: 'robot/basic',
+  type: BASIC_ROBOT,
   id: uuid(),
   description: "Standard issue robot. Lots of these you'll likely see.",
-  birthTime: Date.now()
+  birthTime: Date.now(),
+  abilityToSearch: 0.05
 })
 
-interface UtilityRobot extends Robot {
-  type: 'robot/utility'
+export interface UtilityRobot extends Robot {
+  type: typeof UTILITY_ROBOT
 }
 
 const stubUtilityRobot = (): UtilityRobot => ({
-  type: 'robot/utility',
+  type: UTILITY_ROBOT,
   id: uuid(),
   description:
     'Slightly better than the standard issue robot. Must be kept content with something to work on, otherwise they will walk around making tasks for themselves.',
-  birthTime: Date.now()
+  birthTime: Date.now(),
+  abilityToSearch: 0.25
 })
 
-type RobotType = BasicRobot | UtilityRobot
+export type RobotUnion = BasicRobot | UtilityRobot
 
 type CreateRandomRobot = {
   type: 'ROBOTS/RandomRobot'
@@ -55,19 +63,51 @@ const possibleRobots = [
   {automatonKnowledgeRequirement: 15, factory: stubUtilityRobot}
 ]
 
+type SendSearchExpedition = {
+  type: 'ROBOTS/SendSearchExpedition'
+  [BASIC_ROBOT]?: number
+  [UTILITY_ROBOT]?: number
+}
+
+const sendSearchExpedition = (numbers: {
+  [BASIC_ROBOT]?: number
+  [UTILITY_ROBOT]?: number
+}): SendSearchExpedition => ({
+  ...numbers,
+  type: 'ROBOTS/SendSearchExpedition'
+})
+
 const defaultState = {
-  robots: [] as Robot[]
+  basics: [] as BasicRobot[],
+  utilities: [] as UtilityRobot[]
 }
 
 export type RobotsState = typeof defaultState
 
-type Action = CreateRandomRobot
+const toStateName = (type: RobotTypes): keyof RobotsState => {
+  switch (type) {
+    case BASIC_ROBOT:
+      return 'basics'
+    case UTILITY_ROBOT:
+      return 'utilities'
+  }
+}
+
+type Action = CreateRandomRobot | SendSearchExpedition
 
 export const reducer: Reducer<RobotsState, Action> = (
   state = defaultState,
   action
 ) => {
   switch (action.type) {
+    case 'ROBOTS/SendSearchExpedition': {
+      const {[BASIC_ROBOT]: basics, [UTILITY_ROBOT]: utilities} = action
+      return {
+        ...state,
+        basics: state.basics.slice(basics),
+        utilities: state.utilities.slice(utilities)
+      }
+    }
     case 'ROBOTS/RandomRobot': {
       const {factory} = sample(
         possibleRobots.filter(
@@ -75,9 +115,11 @@ export const reducer: Reducer<RobotsState, Action> = (
             automatonKnowledgeRequirement <= action.automatonKnowldege
         )
       )!
+      const newRobot = factory()
+      const key = toStateName(newRobot.type)
       return {
         ...state,
-        robots: state.robots.concat(factory())
+        [key]: [...state[key], newRobot]
       }
     }
   }
