@@ -74,7 +74,10 @@ export class ExpeditionMenu extends React.Component<
             sendSearchExpedition({
               [BASIC_ROBOT]: Number(this.state.basics),
               [UTILITY_ROBOT]: Number(this.state.utilities),
-              expeditionRobots: [...basics, ...utilities]
+              expeditionRobots: [
+                ...basics.slice(0, Number(this.state.basics)),
+                ...utilities.slice(0, Number(this.state.utilities))
+              ]
             })
             this.setState({basics: '', utilities: ''})
           }}

@@ -23,7 +23,7 @@ export interface PlantMatter extends Item {
   requiredRobots: [typeof BASIC_ROBOT, typeof UTILITY_ROBOT]
 }
 
-export type ItemUnion = Rock
+export type ItemUnion = Rock | PlantMatter
 
 export const rock = (amount: number): Rock => ({
   amount,

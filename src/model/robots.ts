@@ -1,8 +1,10 @@
 import {Reducer} from 'redux'
-import {sample} from 'lodash'
+import {sample, Omit} from 'lodash'
 import uuid from 'uuid'
 
 import {AutomatonState} from './automaton'
+import {Item} from './item'
+import {randomlyFilter, partitionRobots} from './util'
 
 export const BASIC_ROBOT = 'robot/basic'
 export const UTILITY_ROBOT = 'robot/utility'
@@ -79,6 +81,26 @@ export const sendSearchExpedition = (numbers: {
   type: 'ROBOTS/SendSearchExpedition'
 })
 
+type ReturnSearchExpedition = {
+  type: 'ROBOTS/ReturnSearchExpedition'
+  foundItems: Item[]
+  survivingRobots: RobotUnion[]
+}
+
+export const returnSearchExpeditionRobots = (p: {
+  findableItems: (Omit<Item, 'amount'> & {findability: number})[]
+  robots: RobotUnion[]
+  lossChance: number
+}): ReturnSearchExpedition => ({
+  type: 'ROBOTS/ReturnSearchExpedition',
+  survivingRobots: randomlyFilter(p.robots, p.lossChance),
+  foundItems: p.findableItems.map(item => ({
+    ...item,
+    amount: Math.ceil(item.findability),
+    findability: 0
+  }))
+})
+
 const defaultState = {
   basics: [] as BasicRobot[],
   utilities: [] as UtilityRobot[]
@@ -95,7 +117,7 @@ const toStateName = (type: RobotTypes): keyof RobotsState => {
   }
 }
 
-type Action = CreateRandomRobot | SendSearchExpedition
+type Action = CreateRandomRobot | SendSearchExpedition | ReturnSearchExpedition
 
 export const reducer: Reducer<RobotsState, Action> = (
   state = defaultState,
@@ -108,6 +130,14 @@ export const reducer: Reducer<RobotsState, Action> = (
         ...state,
         basics: state.basics.slice(basics),
         utilities: state.utilities.slice(utilities)
+      }
+    }
+    case 'ROBOTS/ReturnSearchExpedition': {
+      const {basics, utilities} = partitionRobots(action.survivingRobots)
+      return {
+        ...state,
+        basics: state.basics.concat(basics),
+        utilities: state.utilities.concat(utilities)
       }
     }
     case 'ROBOTS/RandomRobot': {

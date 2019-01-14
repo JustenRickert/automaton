@@ -28,3 +28,10 @@ export function partitionRobots(robots: RobotUnion[]) {
   }
   return {basics, utilities}
 }
+
+export function randomlyFilter<T>(ts: T[], lossChange: number) {
+  return ts.reduce<T[]>(
+    (ts, t) => (Math.random() < lossChange ? ts : ts.concat(t)),
+    []
+  )
+}
